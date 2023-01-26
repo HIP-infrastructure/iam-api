@@ -10,6 +10,10 @@ const ADMIN = process.env.ADMIN || '';
 const USER1 = process.env.USER1 || '';
 const USER2 = process.env.USER2 || '';
 
+const ROOT_GROUP = 'HIP-Projects';
+const GROUP_1 = 'HIP-Projects-Epilepsy-101';
+const GROUP_2 = 'HIP-Projects-Epilepsy-102';
+
 type Role = 'administrator' | 'member';
 type getAuthTokenResponse = {
     data: { access_token: string; };
@@ -65,17 +69,17 @@ const request = (options: any, status: boolean = true) => axios.request(options)
     }
 });
 
-const getAuthToken = async (url: string, clientId: string, clientSecret: string): Promise<string> => {
+const getAuthToken = async (): Promise<string> => {
     const headers = { "Content-Type": "application/x-www-form-urlencoded" };
     const options = {
         method: 'POST',
-        url,
+        url: IAM_CLIENT_URL,
         headers,
         data: {
             grant_type: "client_credentials",
             scope: "openid email roles team profile group clb.wiki.read clb.wiki.write",
-            client_id: clientId,
-            client_secret: clientSecret
+            client_id: IAM_CLIENT_ID,
+            client_secret: IAM_CLIENT_SECRET
         }
     };
 
@@ -86,11 +90,11 @@ const getAuthToken = async (url: string, clientId: string, clientSecret: string)
     });
 };
 
-const getUser = async (apiUrl: string, token: string, userName: string): Promise<User> => {
+const getUser = async (token: string, userName: string): Promise<User> => {
     console.log(`getUser: ${userName}`);
     const options = {
         method: 'GET',
-        url: `${apiUrl}/identity/users/${userName}`,
+        url: `${EBRAINS_API_URL}/identity/users/${userName}`,
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -99,11 +103,11 @@ const getUser = async (apiUrl: string, token: string, userName: string): Promise
     return request(options, false);
 };
 
-const createGroup = async (apiUrl: string, token: string, name: string): Promise<number> => {
+const createGroup = async (token: string, name: string): Promise<number> => {
     console.log(`createGroup: ${name}`);
     const options = {
         method: 'POST',
-        url: `${apiUrl}/identity/groups`,
+        url: `${EBRAINS_API_URL}/identity/groups`,
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
@@ -120,11 +124,11 @@ const createGroup = async (apiUrl: string, token: string, name: string): Promise
 
 };
 
-const assignGroupToGroup = async (apiUrl: string, token: string, groupName1: string, role: Role, groupName2: string): Promise<number> => {
+const assignGroupToGroup = async (token: string, groupName1: string, role: Role, groupName2: string): Promise<number> => {
     console.log(`assignGroupToGroup: ${groupName1} ${role} ${groupName2}`);
     const options = {
         method: 'PUT',
-        url: `${apiUrl}/identity/groups/${groupName1}/${role}/groups/${groupName2}`,
+        url: `${EBRAINS_API_URL}/identity/groups/${groupName1}/${role}/groups/${groupName2}`,
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -134,11 +138,11 @@ const assignGroupToGroup = async (apiUrl: string, token: string, groupName1: str
 
 };
 
-const deleteGroup = async (apiUrl: string, token: string, name: string): Promise<number> => {
+const deleteGroup = async (token: string, name: string): Promise<number> => {
     console.log(`deleteGroup: ${name}`);
     const options = {
         method: 'DELETE',
-        url: `${apiUrl}/identity/groups/${name}`,
+        url: `${EBRAINS_API_URL}/identity/groups/${name}`,
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
@@ -148,11 +152,11 @@ const deleteGroup = async (apiUrl: string, token: string, name: string): Promise
     return request(options);
 };
 
-const addUserToGroup = async (apiUrl: string, token: string, groupName: string, role: Role, memberName: string): Promise<number> => {
+const addUserToGroup = async (token: string, groupName: string, role: Role, memberName: string): Promise<number> => {
     console.log(`addUserToGroup: ${groupName} ${role} ${memberName}`);
     const options = {
         method: 'PUT',
-        url: `${apiUrl}/identity/groups/${groupName}/${role}/users/${memberName}`,
+        url: `${EBRAINS_API_URL}/identity/groups/${groupName}/${role}/users/${memberName}`,
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -161,11 +165,11 @@ const addUserToGroup = async (apiUrl: string, token: string, groupName: string, 
     return request(options);
 };
 
-const removeUserFromGroup = async (apiUrl: string, token: string, groupName: string, role: Role, memberName: string): Promise<number> => {
+const removeUserFromGroup = async (token: string, groupName: string, role: Role, memberName: string): Promise<number> => {
     console.log(`removeUserFromGroup: ${groupName} ${role} ${memberName}`);
     const options = {
         method: 'DELETE',
-        url: `${apiUrl}/identity/groups/${groupName}/${role}/users/${memberName}`,
+        url: `${EBRAINS_API_URL}/identity/groups/${groupName}/${role}/users/${memberName}`,
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -174,11 +178,11 @@ const removeUserFromGroup = async (apiUrl: string, token: string, groupName: str
     return request(options);
 };
 
-const getGroup = async (apiUrl: string, token: string, groupName: string): Promise<Group> => {
+const getGroup = async (token: string, groupName: string): Promise<Group> => {
     console.log(`getGroup: ${groupName}`);
     const options = {
         method: 'GET',
-        url: `${apiUrl}/identity/groups/${groupName}`,
+        url: `${EBRAINS_API_URL}/identity/groups/${groupName}`,
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -187,11 +191,11 @@ const getGroup = async (apiUrl: string, token: string, groupName: string): Promi
     return request(options, false);
 };
 
-const getGroupListsByRole = async (apiUrl: string, token: string, groupName: string, role: Role): Promise<GroupLists> => {
+const getGroupListsByRole = async (token: string, groupName: string, role: Role): Promise<GroupLists> => {
     console.log(`getGroupListsByRole: ${groupName} ${role}`);
     const options = {
         method: 'GET',
-        url: `${apiUrl}/identity/groups/${groupName}/${role}`,
+        url: `${EBRAINS_API_URL}/identity/groups/${groupName}/${role}`,
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -200,10 +204,10 @@ const getGroupListsByRole = async (apiUrl: string, token: string, groupName: str
     return request(options, false);
 };
 
-const getEverythingInGroup = async (apiUrl: string, token: string, groupName: string): Promise<Group | { members: GroupLists, administrators: GroupLists; }> => {
-    const group = await getGroup(apiUrl, token, groupName);
-    const groupList = await getGroupListsByRole(apiUrl, token, groupName, 'member');
-    const groupListAdmin = await getGroupListsByRole(apiUrl, token, groupName, 'administrator');
+const getEverythingInGroup = async (token: string, groupName: string): Promise<Group | { members: GroupLists, administrators: GroupLists; }> => {
+    const group = await getGroup(token, groupName);
+    const groupList = await getGroupListsByRole(token, groupName, 'member');
+    const groupListAdmin = await getGroupListsByRole(token, groupName, 'administrator');
 
     return {
         ...group,
@@ -214,49 +218,45 @@ const getEverythingInGroup = async (apiUrl: string, token: string, groupName: st
 
 
 const setup = async () => {
-    const token = await getAuthToken(IAM_CLIENT_URL, IAM_CLIENT_ID, IAM_CLIENT_SECRET);
+    const token = await getAuthToken();
 
-    await Promise.all([rootGroup, group1, group2].map(async (g) => createGroup(EBRAINS_API_URL, token, g)));
+    await Promise.all([ROOT_GROUP, GROUP_1, GROUP_2].map(async (g) => createGroup(token, g)));
 
-    await Promise.all([USER1, USER2].map(async (u) => addUserToGroup(EBRAINS_API_URL, token, rootGroup, 'member', u)));
+    await Promise.all([USER1, USER2].map(async (u) => addUserToGroup(token, ROOT_GROUP, 'member', u)));
 
-    await addUserToGroup(EBRAINS_API_URL, token, rootGroup, 'administrator', ADMIN);
+    await addUserToGroup(token, ROOT_GROUP, 'administrator', ADMIN);
 
-    await addUserToGroup(EBRAINS_API_URL, token, group1, 'member', USER1);
-    await addUserToGroup(EBRAINS_API_URL, token, group1, 'member', USER2);
-    await addUserToGroup(EBRAINS_API_URL, token, group1, 'administrator', ADMIN);
+    await addUserToGroup(token, GROUP_1, 'member', USER1);
+    await addUserToGroup(token, GROUP_1, 'member', USER2);
+    await addUserToGroup(token, GROUP_1, 'administrator', ADMIN);
 
-    await addUserToGroup(EBRAINS_API_URL, token, group2, 'administrator', USER1);
-    await addUserToGroup(EBRAINS_API_URL, token, group2, 'member', USER2);
+    await addUserToGroup(token, GROUP_2, 'administrator', USER1);
+    await addUserToGroup(token, GROUP_2, 'member', USER2);
 
-    await assignGroupToGroup(EBRAINS_API_URL, token, rootGroup, 'member', group1);
-    await assignGroupToGroup(EBRAINS_API_URL, token, rootGroup, 'member', group2);
+    await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_1);
+    await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_2);
 };
 
 const getGroups = async () => {
-    const token = await getAuthToken(IAM_CLIENT_URL, IAM_CLIENT_ID, IAM_CLIENT_SECRET);
+    const token = await getAuthToken();
 
-    const getRootGroup = await getEverythingInGroup(EBRAINS_API_URL, token, rootGroup);
+    const getRootGroup = await getEverythingInGroup(token, ROOT_GROUP);
     console.log(JSON.stringify(getRootGroup, null, 2));
 
-    const getGroup1 = await getEverythingInGroup(EBRAINS_API_URL, token, group1);
+    const getGroup1 = await getEverythingInGroup(token, GROUP_1);
     console.log(JSON.stringify(getGroup1, null, 2));
 
-    const getGroup2 = await getEverythingInGroup(EBRAINS_API_URL, token, group2);
+    const getGroup2 = await getEverythingInGroup(token, GROUP_2);
     console.log(JSON.stringify(getGroup2, null, 2));
 };
 
 const cleanUp = async () => {
-    const token = await getAuthToken(IAM_CLIENT_URL, IAM_CLIENT_ID, IAM_CLIENT_SECRET);
+    const token = await getAuthToken();
 
-    await deleteGroup(EBRAINS_API_URL, token, rootGroup);
-    await deleteGroup(EBRAINS_API_URL, token, group1);
-    await deleteGroup(EBRAINS_API_URL, token, group2);
+    await deleteGroup(token, ROOT_GROUP);
+    await deleteGroup(token, GROUP_1);
+    await deleteGroup(token, GROUP_2);
 };
-
-const rootGroup = 'HIP-Projects';
-const group1 = 'HIP-Projects-Epilepsy-101';
-const group2 = 'HIP-Projects-Epilepsy-102';
 
 const main = async () => {
     await setup();

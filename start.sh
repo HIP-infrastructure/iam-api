@@ -1,4 +1,4 @@
 #!/bin/sh
 
-docker build -t iam-api .
-docker run iam-api 
+docker build -t ebrains-api .
+docker run ebrains-api

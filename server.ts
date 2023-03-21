@@ -51,7 +51,7 @@ const wait = async (amount: number) => setTimeout(() => {
 
 const request = (options: any, status: boolean = true) => {
     const { method, url } = options
-    console.log(JSON.stringify({ method, url, data: options.data }, null, 2))
+    // console.log(JSON.stringify({ method, url, data: options.data }, null, 2))
     return axios.request(options).then(function (response: any) {
         if (status)
             return response.status
@@ -245,7 +245,7 @@ const getEverythingInGroup = async (token: string, groupName: string): Promise<G
     }
 }
 
-const setup = async () => {
+const hipUseCaseTest = async () => {
     try {
         const token = await getAuthToken()
 
@@ -264,14 +264,6 @@ const setup = async () => {
 
         await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_1)
         await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_2)
-    } catch (error: any) {
-        console.error(error.data)
-    }
-}
-
-const getGroups = async () => {
-    try {
-        const token = await getAuthToken()
 
         const getRootGroup = await getEverythingInGroup(token, ROOT_GROUP)
         console.log(JSON.stringify(getRootGroup, null, 2))
@@ -284,20 +276,13 @@ const getGroups = async () => {
 
         const userGroups = await getUserGroups(token, USER1)
         console.log(JSON.stringify(userGroups, null, 2))
-    } catch (error: any) {
-        console.error(error.data)
-    }
-}
-
-const cleanUp = async () => {
-    try {
-        const token = await getAuthToken()
 
         await deleteGroup(token, ROOT_GROUP)
         await deleteGroup(token, GROUP_1)
         await deleteGroup(token, GROUP_2)
+
     } catch (error: any) {
-        console.error(error.data)
+        console.error(error)
     }
 }
 
@@ -333,9 +318,7 @@ const minimalTest = async () => {
 }
 
 const main = async () => {
-    await setup()
-    await getGroups()
-    await cleanUp()
+    await hipUseCaseTest()
     // await minimalTest()
 }
 

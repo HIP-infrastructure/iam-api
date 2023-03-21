@@ -45,6 +45,10 @@ interface GroupLists {
 
 type GroupMembership = Group | GroupLists
 
+const wait = async (amount: number) => setTimeout(() => {
+    return Promise.resolve()
+}, amount * 1000)
+
 const request = (options: any, status: boolean = true) => {
     const { method, url } = options
     console.log(JSON.stringify({ method, url, data: options.data }, null, 2))
@@ -57,18 +61,17 @@ const request = (options: any, status: boolean = true) => {
         if (error.response) {
             //response status is an error code
             if (error.response.status > 400) {
-                console.log(error.response.data)
-            }
 
-            return error.response.status
+                throw error.response.data
+            }
         }
         else if (error.request) {
             //response not received though the request was sent
-            console.log(error.request)
+            throw error.request
         }
         else {
             //an error occurred when setting up the request
-            console.log(error.message)
+            throw error.message
         }
     })
 }
@@ -130,7 +133,6 @@ const createGroup = async (token: string, name: string): Promise<number> => {
     }
 
     return request(options)
-
 }
 
 const assignGroupToGroup = async (token: string, groupName1: string, role: Role, groupName2: string): Promise<number> => {
@@ -244,84 +246,97 @@ const getEverythingInGroup = async (token: string, groupName: string): Promise<G
 }
 
 const setup = async () => {
-    const token = await getAuthToken()
+    try {
+        const token = await getAuthToken()
 
-    await Promise.all([ROOT_GROUP, GROUP_1, GROUP_2].map(async (g) => createGroup(token, g)))
+        await Promise.all([ROOT_GROUP, GROUP_1, GROUP_2].map(async (g) => createGroup(token, g)))
 
-    await Promise.all([USER1, USER2].map(async (u) => addUserToGroup(token, ROOT_GROUP, 'member', u)))
+        await Promise.all([USER1, USER2].map(async (u) => addUserToGroup(token, ROOT_GROUP, 'member', u)))
 
-    await addUserToGroup(token, ROOT_GROUP, 'administrator', ADMIN)
+        await addUserToGroup(token, ROOT_GROUP, 'administrator', ADMIN)
 
-    await addUserToGroup(token, GROUP_1, 'member', USER1)
-    await addUserToGroup(token, GROUP_1, 'member', USER2)
-    await addUserToGroup(token, GROUP_1, 'administrator', ADMIN)
+        await addUserToGroup(token, GROUP_1, 'member', USER1)
+        await addUserToGroup(token, GROUP_1, 'member', USER2)
+        await addUserToGroup(token, GROUP_1, 'administrator', ADMIN)
 
-    await addUserToGroup(token, GROUP_2, 'administrator', USER1)
-    await addUserToGroup(token, GROUP_2, 'member', USER2)
+        await addUserToGroup(token, GROUP_2, 'administrator', USER1)
+        await addUserToGroup(token, GROUP_2, 'member', USER2)
 
-    await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_1)
-    await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_2)
+        await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_1)
+        await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_2)
+    } catch (error: any) {
+        console.error(error.data)
+    }
 }
 
 const getGroups = async () => {
-    const token = await getAuthToken()
+    try {
+        const token = await getAuthToken()
 
-    const getRootGroup = await getEverythingInGroup(token, ROOT_GROUP)
-    console.log(JSON.stringify(getRootGroup, null, 2))
+        const getRootGroup = await getEverythingInGroup(token, ROOT_GROUP)
+        console.log(JSON.stringify(getRootGroup, null, 2))
 
-    const getGroup1 = await getEverythingInGroup(token, GROUP_1)
-    console.log(JSON.stringify(getGroup1, null, 2))
+        const getGroup1 = await getEverythingInGroup(token, GROUP_1)
+        console.log(JSON.stringify(getGroup1, null, 2))
 
-    const getGroup2 = await getEverythingInGroup(token, GROUP_2)
-    console.log(JSON.stringify(getGroup2, null, 2))
+        const getGroup2 = await getEverythingInGroup(token, GROUP_2)
+        console.log(JSON.stringify(getGroup2, null, 2))
 
-    const userGroups = await getUserGroups(token, USER1)
-    console.log(JSON.stringify(userGroups, null, 2))
+        const userGroups = await getUserGroups(token, USER1)
+        console.log(JSON.stringify(userGroups, null, 2))
+    } catch (error: any) {
+        console.error(error.data)
+    }
 }
 
 const cleanUp = async () => {
-    const token = await getAuthToken()
+    try {
+        const token = await getAuthToken()
 
-    await deleteGroup(token, ROOT_GROUP)
-    await deleteGroup(token, GROUP_1)
-    await deleteGroup(token, GROUP_2)
+        await deleteGroup(token, ROOT_GROUP)
+        await deleteGroup(token, GROUP_1)
+        await deleteGroup(token, GROUP_2)
+    } catch (error: any) {
+        console.error(error.data)
+    }
 }
-
-const wait = async (amount: number) => setTimeout(() => {
-    return Promise.resolve()
-}, amount * 1000)
 
 const minimalTest = async () => {
     const waitAmount = 0.5
     const group = `HIP-IAM-API-TEST-GROUP-${Date.now()}`
 
-    const token = await getAuthToken()
+    try {
 
-    await wait(waitAmount)
+        const token = await getAuthToken()
 
-    const a = await createGroup(token, group)
-    console.log(JSON.stringify(a, null, 2))
+        await wait(waitAmount)
 
-    await wait(waitAmount)
+        const a = await createGroup(token, group)
+        console.log(JSON.stringify(a, null, 2))
 
-    const b = await addUserToGroup(token, group, 'member', 'nicedexter')
-    console.log(JSON.stringify(b, null, 2))
+        await wait(waitAmount)
 
-    const c = await addUserToGroup(token, group, 'administrator', 'nicedexter')
-    console.log(JSON.stringify(c, null, 2))
+        const b = await addUserToGroup(token, group, 'member', 'nicedexter')
+        console.log(JSON.stringify(b, null, 2))
 
-    const d = await assignGroupToGroup(token, 'HIP-Projects', 'member', group)
-    console.log(JSON.stringify(d, null, 2))
+        const c = await addUserToGroup(token, group, 'administrator', 'nicedexter')
+        console.log(JSON.stringify(c, null, 2))
 
-    const getRootGroup = await getEverythingInGroup(token, group)
-    console.log(JSON.stringify(getRootGroup, null, 2))
+        const d = await assignGroupToGroup(token, 'HIP-Projects', 'member', group)
+        console.log(JSON.stringify(d, null, 2))
+
+        const getRootGroup = await getEverythingInGroup(token, group)
+        console.log(JSON.stringify(getRootGroup, null, 2))
+    } catch (error: any) {
+        console.error(error)
+    }
 }
 
 const main = async () => {
-    // await setup();
-    // await getGroups()
-    // await cleanUp()
-    await minimalTest()
+    await setup()
+    await getGroups()
+    await cleanUp()
+    // await minimalTest()
 }
 
 main()

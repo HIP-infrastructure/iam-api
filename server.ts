@@ -246,9 +246,9 @@ const getEverythingInGroup = async (token: string, groupName: string): Promise<G
 }
 
 const hipUseCaseTest = async () => {
-    try {
-        const token = await getAuthToken()
 
+    const token = await getAuthToken()
+    try {
         await Promise.all([ROOT_GROUP, GROUP_1, GROUP_2].map(async (g) => createGroup(token, g)))
 
         await Promise.all([USER1, USER2].map(async (u) => addUserToGroup(token, ROOT_GROUP, 'member', u)))
@@ -276,13 +276,16 @@ const hipUseCaseTest = async () => {
 
         const userGroups = await getUserGroups(token, USER1)
         console.log(JSON.stringify(userGroups, null, 2))
-
-        await deleteGroup(token, ROOT_GROUP)
-        await deleteGroup(token, GROUP_1)
-        await deleteGroup(token, GROUP_2)
-
     } catch (error: any) {
         console.error(error)
+    } finally {
+        try {
+            await deleteGroup(token, ROOT_GROUP)
+            await deleteGroup(token, GROUP_1)
+            await deleteGroup(token, GROUP_2)
+        } catch (error: any) {
+            console.error(error)
+        }
     }
 }
 
@@ -310,8 +313,10 @@ const minimalTest = async () => {
         const d = await assignGroupToGroup(token, 'HIP-Projects', 'member', group)
         console.log(JSON.stringify(d, null, 2))
 
-        const getRootGroup = await getEverythingInGroup(token, group)
-        console.log(JSON.stringify(getRootGroup, null, 2))
+        const e = await getEverythingInGroup(token, group)
+        console.log(JSON.stringify(e, null, 2))
+
+        await deleteGroup(token, group)
     } catch (error: any) {
         console.error(error)
     }

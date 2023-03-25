@@ -10,9 +10,9 @@ const ADMIN = process.env.ADMIN || ''
 const USER1 = process.env.USER1 || ''
 const USER2 = process.env.USER2 || ''
 
-const ROOT_GROUP = 'HIP-Projects-testing'
-const GROUP_1 = 'HIP-Projects-Epilepsy-101-testing'
-const GROUP_2 = 'HIP-Projects-Epilepsy-102-testing'
+const GROUP_OF_GROUP = `HIP-Projects-testing-${Date.now()}`
+const GROUP_1 = `HIP-Projects-Epilepsy-101-testing-${Date.now()}`
+const GROUP_2 = `HIP-Projects-Epilepsy-102-testing-${Date.now()}`
 
 type Role = 'administrator' | 'member'
 type getAuthTokenResponse = {
@@ -50,7 +50,7 @@ const wait = async (amount: number) => setTimeout(() => {
 }, amount * 1000)
 
 const request = (options: any, status: boolean = true) => {
-    const { method, url } = options
+    // const { method, url } = options
     // console.log(JSON.stringify({ method, url, data: options.data }, null, 2))
     return axios.request(options).then(function (response: any) {
         if (status)
@@ -249,11 +249,11 @@ const hipUseCaseTest = async () => {
 
     const token = await getAuthToken()
     try {
-        await Promise.all([ROOT_GROUP, GROUP_1, GROUP_2].map(async (g) => createGroup(token, g)))
+        await Promise.all([GROUP_OF_GROUP, GROUP_1, GROUP_2].map(async (g) => createGroup(token, g)))
 
-        await Promise.all([USER1, USER2].map(async (u) => addUserToGroup(token, ROOT_GROUP, 'member', u)))
+        await Promise.all([USER1, USER2].map(async (u) => addUserToGroup(token, GROUP_OF_GROUP, 'member', u)))
 
-        await addUserToGroup(token, ROOT_GROUP, 'administrator', ADMIN)
+        await addUserToGroup(token, GROUP_OF_GROUP, 'administrator', ADMIN)
 
         await addUserToGroup(token, GROUP_1, 'member', USER1)
         await addUserToGroup(token, GROUP_1, 'member', USER2)
@@ -262,10 +262,10 @@ const hipUseCaseTest = async () => {
         await addUserToGroup(token, GROUP_2, 'administrator', USER1)
         await addUserToGroup(token, GROUP_2, 'member', USER2)
 
-        await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_1)
-        await assignGroupToGroup(token, ROOT_GROUP, 'member', GROUP_2)
+        await assignGroupToGroup(token, GROUP_OF_GROUP, 'member', GROUP_1)
+        await assignGroupToGroup(token, GROUP_OF_GROUP, 'member', GROUP_2)
 
-        const getRootGroup = await getEverythingInGroup(token, ROOT_GROUP)
+        const getRootGroup = await getEverythingInGroup(token, GROUP_OF_GROUP)
         console.log(JSON.stringify(getRootGroup, null, 2))
 
         const getGroup1 = await getEverythingInGroup(token, GROUP_1)
@@ -280,7 +280,7 @@ const hipUseCaseTest = async () => {
         console.error(error)
     } finally {
         try {
-            await deleteGroup(token, ROOT_GROUP)
+            await deleteGroup(token, GROUP_OF_GROUP)
             await deleteGroup(token, GROUP_1)
             await deleteGroup(token, GROUP_2)
         } catch (error: any) {
@@ -292,13 +292,11 @@ const hipUseCaseTest = async () => {
 const minimalTest = async () => {
     const waitAmount = 0.5
     const group = `HIP-IAM-API-TEST-GROUP-${Date.now()}`
+    const groupOfGroup = `HIP-IAM-API-TEST-GROUP-OF-GROUP-${Date.now()}`
+
+    const token = await getAuthToken()
 
     try {
-
-        const token = await getAuthToken()
-
-        await wait(waitAmount)
-
         const a = await createGroup(token, group)
         console.log(JSON.stringify(a, null, 2))
 
@@ -310,21 +308,30 @@ const minimalTest = async () => {
         const c = await addUserToGroup(token, group, 'administrator', 'nicedexter')
         console.log(JSON.stringify(c, null, 2))
 
-        const d = await assignGroupToGroup(token, 'HIP-Projects', 'member', group)
+        const c1 = await createGroup(token, groupOfGroup)
+        console.log(JSON.stringify(c1, null, 2))
+
+        const d = await assignGroupToGroup(token, groupOfGroup, 'member', group)
         console.log(JSON.stringify(d, null, 2))
 
         const e = await getEverythingInGroup(token, group)
         console.log(JSON.stringify(e, null, 2))
 
-        await deleteGroup(token, group)
     } catch (error: any) {
         console.error(error)
+    } finally {
+        try {
+            await deleteGroup(token, group)
+            await deleteGroup(token, groupOfGroup)
+        } catch (error: any) {
+            console.error(error)
+        }
     }
 }
 
 const main = async () => {
     await hipUseCaseTest()
-    // await minimalTest()
+    await minimalTest()
 }
 
 main()

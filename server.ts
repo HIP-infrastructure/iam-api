@@ -58,6 +58,8 @@ const request = (options: any, status: boolean = true) => {
 
         return response.data
     }).catch(function (error: any) {
+        console.log(JSON.stringify(error, null, 2))
+
         if (error.response) {
             //response status is an error code
             if (error.response.status > 400) {
@@ -302,10 +304,10 @@ const minimalTest = async () => {
 
         await wait(waitAmount)
 
-        const b = await addUserToGroup(token, group, 'member', 'nicedexter')
+        const b = await addUserToGroup(token, group, 'member', 'manu')
         console.log(JSON.stringify(b, null, 2))
 
-        const c = await addUserToGroup(token, group, 'administrator', 'nicedexter')
+        const c = await addUserToGroup(token, group, 'administrator', 'manu')
         console.log(JSON.stringify(c, null, 2))
 
         const c1 = await createGroup(token, groupOfGroup)
@@ -329,9 +331,25 @@ const minimalTest = async () => {
     }
 }
 
+const fixProd = async () => {
+    try {
+        const group = 'HIP-prod-projects-admin-group'
+        const token = await getAuthToken()
+
+        const a = await addUserToGroup(token, group, 'administrator', 'florian')
+        console.log(JSON.stringify(a, null, 2))
+        // await addUserToGroup(token, group, 'administrator', 'manu')
+        // await addUserToGroup(token, group, 'administrator', 'manu')
+        // await addUserToGroup(token, group, 'administrator', 'manu')
+    } catch (error: any) {
+        console.error(error)
+    }
+}
+
 const main = async () => {
-    await hipUseCaseTest()
+    // await hipUseCaseTest()
     await minimalTest()
+    // await fixProd()
 }
 
 main()
